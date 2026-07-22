@@ -1,118 +1,51 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#050505" />
-  <title>KIVO Sunset Run #01</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <img
-    src="parceria.jpg"
-    alt="Parceria KIVO × Playground CrossFit"
-    class="partnership-banner"
-  />
 
-  <main class="page">
-    <section class="hero">
-      <div class="brand">
-        <h1>KIVO</h1>
-        <p>MOVE TOGETHER. <span>FEEL ALIVE.</span></p>
-      </div>
+(function () {
+  "use strict";
 
-      <h2>KIVO SUNSET RUN #01</h2>
-      <p class="subtitle">Corre. Sente. Liga-te.</p>
+  const SERVICE_ID = "service_jrva34l";
+  const TEMPLATE_ID = "template_cfnaoe9";
+  const PUBLIC_KEY = "BwkH35pSz7UwTpF9V";
 
-      <div class="details">
-        <p>📍 Cais do Bico — Murtosa</p>
-        <p>📅 1 de agosto de 2026</p>
-        <p>💶 Inscrição: 15€</p>
-      </div>
+  const form = document.getElementById("registration-form");
+  const submitButton = document.getElementById("submit-button");
+  const statusMessage = document.getElementById("form-status");
 
-      <a href="#inscricao" class="btn">INSCREVER-ME</a>
-    </section>
+  if (!form || !submitButton || !statusMessage) return;
 
-    <section class="about">
-      <h2>Uma corrida social ao pôr do sol</h2>
-      <p>
-        O KIVO Sunset Run #01 não é uma corrida competitiva. É uma experiência
-        que junta corrida, música e comunidade, terminando com energia positiva
-        ao pôr do sol.
-      </p>
-      <div class="tags">
-        <span>RUN</span>
-        <span>MUSIC</span>
-        <span>COMMUNITY</span>
-      </div>
-    </section>
+  if (typeof emailjs === "undefined") {
+    statusMessage.textContent = "Não foi possível carregar o formulário. Atualiza a página e tenta novamente.";
+    statusMessage.className = "form-status error";
+    submitButton.disabled = true;
+    return;
+  }
 
-    <section class="form-section" id="pagamento">
-      <h2>Dados para pagamento</h2>
-      <div class="details">
-        <p><strong>Valor da inscrição:</strong> 15€</p>
-        <p><strong>Transferência bancária</strong></p>
-        <p>IBAN:<br><strong>PT50 0007 0000 0067 9509 0572 3</strong></p>
-        <p>Titular:<br><strong>Playground Strength</strong></p>
-        <p>
-          Depois de efetuar a transferência bancária envie o comprovativo para:<br>
-          <strong>wearekivo@gmail.com</strong>
-        </p>
-        <p>A inscrição só fica confirmada após validação do pagamento.</p>
-      </div>
-    </section>
+  emailjs.init({ publicKey: PUBLIC_KEY });
 
-    <section class="form-section" id="inscricao">
-      <h2>Garantir inscrição</h2>
-      <p>
-        Preenche os teus dados e faz a transferência bancária. A tua vaga será
-        confirmada após validação do pagamento.
-      </p>
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
 
-      <form id="registration-form">
-        <input type="hidden" name="event_name" value="KIVO Sunset Run #01" />
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
 
-        <label class="field-label" for="nome">Nome completo</label>
-        <input id="nome" type="text" name="nome" placeholder="Nome completo" autocomplete="name" required />
+    submitButton.disabled = true;
+    submitButton.textContent = "A ENVIAR...";
+    statusMessage.textContent = "";
+    statusMessage.className = "form-status";
 
-        <label class="field-label" for="email">Email</label>
-        <input id="email" type="email" name="email" placeholder="Email" autocomplete="email" required />
-
-        <label class="field-label" for="telemovel">Telemóvel</label>
-        <input id="telemovel" type="tel" name="telemovel" placeholder="Telemóvel" autocomplete="tel" required />
-
-        <label class="field-label" for="nome_transferencia">Nome usado na transferência bancária</label>
-        <input
-          id="nome_transferencia"
-          type="text"
-          name="nome_transferencia"
-          placeholder="Nome usado na transferência bancária"
-          required
-        />
-
-        <label class="field-label" for="tamanho_tshirt">Tamanho da T-shirt</label>
-        <select id="tamanho_tshirt" name="tamanho_tshirt" required>
-          <option value="" selected disabled>Seleciona o tamanho da T-shirt</option>
-          <option value="XS">XS</option>
-          <option value="S">S</option>
-          <option value="M">M</option>
-          <option value="L">L</option>
-          <option value="XL">XL</option>
-          <option value="XXL">XXL</option>
-        </select>
-
-        <label class="check">
-          <input type="checkbox" name="aceito" value="Sim" required />
-          Aceito que a minha inscrição só fica confirmada após validação do pagamento.
-        </label>
-
-        <button id="submit-button" type="submit">ENVIAR INSCRIÇÃO</button>
-        <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
-      </form>
-    </section>
-  </main>
-
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script src="script.js"></script>
-</body>
-</html>
+    try {
+      await emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form);
+      form.reset();
+      statusMessage.textContent = "Inscrição enviada com sucesso! A tua vaga será confirmada após validação do pagamento.";
+      statusMessage.className = "form-status success";
+    } catch (error) {
+      console.error("Erro ao enviar inscrição:", error);
+      statusMessage.textContent = "Não foi possível enviar a inscrição. Tenta novamente dentro de alguns instantes.";
+      statusMessage.className = "form-status error";
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = "ENVIAR INSCRIÇÃO";
+    }
+  });
+})();
